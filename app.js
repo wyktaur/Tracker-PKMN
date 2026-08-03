@@ -63,24 +63,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     await chargerCollectionDepuisFirebase();
 });
 
-function basculerTheme() {
-    const themeActuel = document.documentElement.getAttribute('data-theme');
-    const nouveauTheme = themeActuel === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', nouveauTheme);
-    localStorage.setItem('pokemonTheme', nouveauTheme);
-    mettreAJourBoutonTheme(nouveauTheme);
-    mettreAJourGraphiquesMacro();
-}
-
-function mettreAJourBoutonTheme(theme) {
-    const bouton = document.getElementById('theme-toggle');
-    if (bouton) {
-        bouton.innerText = theme === 'dark' ? '☀️' : '🌙';
-    }
-}
-
-function changerOnglet(nomOnglet, event) {
+// --- GESTION DES ONGLETS ET DU THÈME ---
+window.changerOnglet = function(nomOnglet, event) {
     document.querySelectorAll('.onglet-contenu').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
 
@@ -97,6 +81,23 @@ function changerOnglet(nomOnglet, event) {
 
     if (event && event.target) {
         event.target.classList.add('active');
+    }
+}
+
+window.basculerTheme = function() {
+    const themeActuel = document.documentElement.getAttribute('data-theme');
+    const nouveauTheme = themeActuel === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', nouveauTheme);
+    localStorage.setItem('pokemonTheme', nouveauTheme);
+    mettreAJourBoutonTheme(nouveauTheme);
+    mettreAJourGraphiquesMacro();
+}
+
+function mettreAJourBoutonTheme(theme) {
+    const bouton = document.getElementById('theme-toggle');
+    if (bouton) {
+        bouton.innerText = theme === 'dark' ? '☀️' : '🌙';
     }
 }
 
