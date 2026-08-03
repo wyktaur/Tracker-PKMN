@@ -1,27 +1,21 @@
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
+// === CONFIGURATION FIREBASE ===
+const firebaseConfig = {
     apiKey: "AIzaSyCrcApCqFrbC4Zom-wyu3q1QgMuMhirVAo",
     authDomain: "trackerpokemon.firebaseapp.com",
     projectId: "trackerpokemon",
     storageBucket: "trackerpokemon.firebasestorage.app",
     messagingSenderId: "956649261781",
-    appId: "1:956649261781:web:56a13eff2dd0901377305c",
-    measurementId: "G-ZF68E29GNV"
-  };
+    appId: "1:956649261781:web:56a13eff2dd0901377305c"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-let collection = JSON.parse(localStorage.getItem('pokemonCollection')) || [];
+// Initialisation de Firebase & Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let collectionData = [];
 let modeVueActuel = localStorage.getItem('pokemonVue') || 'grille';
 
 const form = document.getElementById('add-form');
@@ -45,7 +39,7 @@ function convertirDateEnObjet(strDate) {
     return new Date(2026, 0, 1);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     const themeEnregistre = localStorage.getItem('pokemonTheme') || 'light';
     document.documentElement.setAttribute('data-theme', themeEnregistre);
     mettreAJourBoutonTheme(themeEnregistre);
@@ -66,7 +60,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (saisieMois) saisieMois.value = moisActuel;
     if (saisieAnnee && document.querySelector(`#saisie-globale-annee option[value="${anneeActuelle}"]`)) saisieAnnee.value = anneeActuelle;
 
-    mettreAJourAffichage();
+    await chargerCollectionDepuisFirebase();
 });
 
 function basculerTheme() {
@@ -129,8 +123,20 @@ function appliquerModeVueUI(mode) {
     }
 }
 
+async function chargerCollectionDepuisFirebase() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "pokemonCollection"));
+        collectionData = [];
+        querySnapshot.forEach((docSnap) => {
+            collectionData.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        mettreAJourAffichage();
+    } catch (error) {
+        console.error("Erreur lors du chargement Firebase :", error);
+    }
+}
+
 function mettreAJourAffichage() {
-    localStorage.setItem('pokemonCollection', JSON.stringify(collection));
     grid.innerHTML = ''; 
 
     let sommeDepenseeGlobale = 0;
@@ -139,13 +145,13 @@ function mettreAJourAffichage() {
     const texteRecherche = document.getElementById('input-recherche') ? document.getElementById('input-recherche').value.toLowerCase().trim() : '';
     const triOption = document.getElementById('tri-option').value;
 
-    collection.forEach(item => {
+    collectionData.forEach(item => {
         const quantite = item.quantite || 1;
         sommeDepenseeGlobale += (item.prixAchat * quantite);
         valeurCollectionGlobale += (item.valeur * quantite);
     });
 
-    let itemsAffiches = collection.map((item, originalIndex) => ({ ...item, originalIndex }));
+    let itemsAffiches = collectionData.map((item, originalIndex) => ({ ...item, originalIndex }));
 
     if (texteRecherche !== '') {
         itemsAffiches = itemsAffiches.filter(item => 
@@ -176,6 +182,7 @@ function mettreAJourAffichage() {
 
     itemsAffiches.forEach((item) => {
         const index = item.originalIndex;
+        const firestoreId = item.id;
         const quantite = item.quantite || 1; 
 
         if (!item.historique) {
@@ -207,7 +214,7 @@ function mettreAJourAffichage() {
                 <div style="position: relative;">
                     <img src="${item.image}" alt="${item.nom}" class="card-image">
                     <span class="${tendanceClass}">${tendanceIcon} ${signeRoi}${roiItem.toFixed(1)}%</span>
-                    <button class="btn-ajout-rapide-card" onclick="event.stopPropagation(); ouvrirModalAjoutStock(${index})" title="Ajouter un exemplaire">+</button>
+                    <button class="btn-ajout-rapide-card" onclick="event.stopPropagation(); ouvrirModalAjoutStock('${firestoreId}')" title="Ajouter un exemplaire">+</button>
                 </div>
                 <div class="card-body">
                     <h3>${quantite}x ${item.nom}</h3>
@@ -220,8 +227,8 @@ function mettreAJourAffichage() {
                     <p class="card-profit ${couleurDiff}">Plus-value : ${signe}${differenceTotale.toFixed(2)} €</p>
                     <div class="card-actions" onclick="event.stopPropagation()">
                         ${boutonCardmarket}
-                        <button onclick="ouvrirModification(${index})" class="btn-modifier">Modifier</button>
-                        <button onclick="supprimerItem(${index})" class="btn-supprimer">Supprimer</button>
+                        <button onclick="ouvrirModification('${firestoreId}')" class="btn-modifier">Modifier</button>
+                        <button onclick="supprimerItem('${firestoreId}')" class="btn-supprimer">Supprimer</button>
                     </div>
                 </div>
             `;
@@ -250,9 +257,9 @@ function mettreAJourAffichage() {
                 </div>
                 <div style="flex: 1; text-align: right; display: flex; gap: 5px; justify-content: flex-end;" onclick="event.stopPropagation()">
                     ${boutonCardmarket}
-                    <button onclick="ouvrirModalAjoutStock(${index})" class="btn-modifier" style="padding: 6px 10px; background: #34c759; color: white;" title="Ajouter un exemplaire">+</button>
-                    <button onclick="ouvrirModification(${index})" class="btn-modifier" style="padding: 6px 12px;">Modifier</button>
-                    <button onclick="supprimerItem(${index})" class="btn-supprimer" style="padding: 6px 12px;">Supprimer</button>
+                    <button onclick="ouvrirModalAjoutStock('${firestoreId}')" class="btn-modifier" style="padding: 6px 10px; background: #34c759; color: white;" title="Ajouter un exemplaire">+</button>
+                    <button onclick="ouvrirModification('${firestoreId}')" class="btn-modifier" style="padding: 6px 12px;">Modifier</button>
+                    <button onclick="supprimerItem('${firestoreId}')" class="btn-supprimer" style="padding: 6px 12px;">Supprimer</button>
                 </div>
             `;
             grid.appendChild(row);
@@ -285,7 +292,7 @@ function mettreAJourGraphiquesMacro() {
     const couleurTexte = isDark ? '#98989f' : '#86868b';
 
     let toutesLesDatesSet = new Set();
-    collection.forEach(item => {
+    collectionData.forEach(item => {
         if (item.historique) {
             item.historique.forEach(h => toutesLesDatesSet.add(h.date));
         }
@@ -312,7 +319,7 @@ function mettreAJourGraphiquesMacro() {
         const dateObjCourante = convertirDateEnObjet(date);
 
         let sommeInvestieMois = 0;
-        collection.forEach(item => {
+        collectionData.forEach(item => {
             if (item.achatsDetail && item.achatsDetail.length > 0) {
                 item.achatsDetail.forEach(achat => {
                     const dateAchatItem = convertirDateEnObjet(achat.moisAchat);
@@ -329,7 +336,7 @@ function mettreAJourGraphiquesMacro() {
         });
 
         let sommeValeurDate = 0;
-        collection.forEach(item => {
+        collectionData.forEach(item => {
             const quantite = item.quantite || 1;
             const pointH = item.historique ? item.historique.find(h => h.date === date) : null;
             if (pointH) {
@@ -414,7 +421,7 @@ function mettreAJourGraphiquesMacro() {
     }
 
     let categoriesMap = {};
-    collection.forEach(item => {
+    collectionData.forEach(item => {
         const cat = item.nom || 'Autre';
         const valTotale = item.valeur * (item.quantite || 1);
         categoriesMap[cat] = (categoriesMap[cat] || 0) + valTotale;
@@ -447,7 +454,6 @@ function mettreAJourGraphiquesMacro() {
     }
 }
 
-// --- Ajout d'un nouvel item (Sidebar) sécurisé ---
 form.addEventListener('submit', function(e) {
     e.preventDefault(); 
     const imageInput = document.getElementById('imageInput');
@@ -459,7 +465,7 @@ form.addEventListener('submit', function(e) {
     }
 
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = async function(event) {
         try {
             const nomSaisi = document.getElementById('nom').value.trim();
             const setSaisi = (document.getElementById('set').value || "").trim().toLowerCase();
@@ -472,14 +478,14 @@ form.addEventListener('submit', function(e) {
             const anneeStr = document.getElementById('moisAchat-annee').value;
             const moisAchatSaisi = `${moisStr.charAt(0).toUpperCase() + moisStr.slice(1)} ${anneeStr}`;
 
-            const indexExistant = collection.findIndex(item => 
+            const indexExistant = collectionData.findIndex(item => 
                 (item.nom || "").toLowerCase() === nomSaisi.toLowerCase() && 
                 (item.set || "").toLowerCase() === setSaisi &&
                 (item.details || "").trim().toLowerCase() === detailsSaisi
             );
 
             if (indexExistant !== -1) {
-                let itemExistant = collection[indexExistant];
+                let itemExistant = collectionData[indexExistant];
                 const ancienneQuantite = itemExistant.quantite || 1;
                 const ancienPrixMoyen = itemExistant.prixAchat || 0;
                 const nouvelleQuantiteTotale = ancienneQuantite + quantiteAjoutee;
@@ -502,6 +508,15 @@ form.addEventListener('submit', function(e) {
                 } else {
                     itemExistant.historique.push({ date: moisAchatSaisi, valeur: valeurActuelleSaisie });
                 }
+
+                await updateDoc(doc(db, "pokemonCollection", itemExistant.id), {
+                    quantite: itemExistant.quantite,
+                    prixAchat: itemExistant.prixAchat,
+                    valeur: itemExistant.valeur,
+                    achatsDetail: itemExistant.achatsDetail,
+                    historique: itemExistant.historique
+                });
+
             } else {
                 const nouvelItem = {
                     nom: nomSaisi,
@@ -516,10 +531,13 @@ form.addEventListener('submit', function(e) {
                     image: event.target.result,
                     historique: [{ date: moisAchatSaisi, valeur: valeurActuelleSaisie }]
                 };
-                collection.push(nouvelItem);
+
+                const docRef = await addDoc(collection(db, "pokemonCollection"), nouvelItem);
+                nouvelItem.id = docRef.id;
+                collectionData.push(nouvelItem);
             }
 
-            mettreAJourAffichage();
+            await chargerCollectionDepuisFirebase();
             form.reset(); 
             document.getElementById('quantite').value = 1; 
             
@@ -527,17 +545,16 @@ form.addEventListener('submit', function(e) {
             document.getElementById('moisAchat-mois').value = dateActuelle.toLocaleString('fr-FR', { month: 'long' });
             document.getElementById('moisAchat-annee').value = dateActuelle.getFullYear().toString();
         } catch (err) {
-            console.error("Erreur lors de l'ajout :", err);
-            alert("Une erreur est survenue lors de l'ajout de l'item.");
+            console.error("Erreur lors de l'ajout Firebase :", err);
+            alert("Erreur lors de l'enregistrement de l'item.");
         }
     };
     reader.readAsDataURL(file);
 });
 
-// --- Gestion Ajout Rapide de Stock (Bouton + sur la carte) ---
-function ouvrirModalAjoutStock(index) {
-    const item = collection[index];
-    document.getElementById('stock-item-index').value = index;
+window.ouvrirModalAjoutStock = function(firestoreId) {
+    const item = collectionData.find(i => i.id === firestoreId);
+    document.getElementById('stock-item-index').value = firestoreId;
     document.getElementById('titre-modal-stock').innerText = `Ajouter un exemplaire`;
     document.getElementById('sous-titre-modal-stock').innerText = `${item.nom} (${item.set})`;
     document.getElementById('stock-quantite').value = 1;
@@ -550,13 +567,13 @@ function ouvrirModalAjoutStock(index) {
     document.getElementById('modal-ajout-stock').style.display = 'flex';
 }
 
-function fermerModalAjoutStock() {
+window.fermerModalAjoutStock = function() {
     document.getElementById('modal-ajout-stock').style.display = 'none';
 }
 
-function validerAjoutStock(e) {
+window.validerAjoutStock = async function(e) {
     e.preventDefault();
-    const index = parseInt(document.getElementById('stock-item-index').value);
+    const firestoreId = document.getElementById('stock-item-index').value;
     const quantiteAjoutee = parseInt(document.getElementById('stock-quantite').value);
     const prixAchatAjoute = parseFloat(document.getElementById('stock-prix').value);
     
@@ -564,7 +581,7 @@ function validerAjoutStock(e) {
     const anneeStr = document.getElementById('stock-annee').value;
     const moisAchatSaisi = `${moisStr.charAt(0).toUpperCase() + moisStr.slice(1)} ${anneeStr}`;
 
-    let item = collection[index];
+    let item = collectionData.find(i => i.id === firestoreId);
     const ancienneQuantite = item.quantite || 1;
     const ancienPrixMoyen = item.prixAchat;
     const nouvelleQuantiteTotale = ancienneQuantite + quantiteAjoutee;
@@ -585,14 +602,21 @@ function validerAjoutStock(e) {
         item.historique.push({ date: moisAchatSaisi, valeur: item.valeur });
     }
 
+    await updateDoc(doc(db, "pokemonCollection", firestoreId), {
+        quantite: item.quantite,
+        prixAchat: item.prixAchat,
+        achatsDetail: item.achatsDetail,
+        historique: item.historique
+    });
+
     fermerModalAjoutStock();
-    mettreAJourAffichage();
+    await chargerCollectionDepuisFirebase();
 }
 
-function ouvrirModification(index) {
-    const item = collection[index];
+window.ouvrirModification = function(firestoreId) {
+    const item = collectionData.find(i => i.id === firestoreId);
 
-    document.getElementById('edit-index').value = index;
+    document.getElementById('edit-index').value = firestoreId;
     document.getElementById('edit-nom').value = item.nom;
     document.getElementById('edit-quantite').value = item.quantite;
     document.getElementById('edit-set').value = item.set;
@@ -613,23 +637,22 @@ function ouvrirModification(index) {
     document.getElementById('modal-modification').style.display = 'flex';
 }
 
-function fermerModification() {
+window.fermerModification = function() {
     document.getElementById('modal-modification').style.display = 'none';
 }
 
-function sauvegarderModificationItem(e) {
+window.sauvegarderModificationItem = async function(e) {
     e.preventDefault();
-    const index = parseInt(document.getElementById('edit-index').value);
-    const itemActuel = collection[index];
+    const firestoreId = document.getElementById('edit-index').value;
+    const itemActuel = collectionData.find(i => i.id === firestoreId);
     const imageInputFile = document.getElementById('edit-imageInput').files[0];
 
     const moisModifStr = document.getElementById('edit-moisAchat-mois').value;
     const anneeModifStr = document.getElementById('edit-moisAchat-annee').value;
     const moisAchatModifie = `${moisModifStr.charAt(0).toUpperCase() + moisModifStr.slice(1)} ${anneeModifStr}`;
 
-    const enregistrerDonnees = (imageFinal) => {
-        collection[index] = {
-            ...itemActuel,
+    const enregistrerDonnees = async (imageFinal) => {
+        const donneesMaj = {
             nom: document.getElementById('edit-nom').value,
             quantite: parseInt(document.getElementById('edit-quantite').value),
             set: document.getElementById('edit-set').value,
@@ -641,30 +664,31 @@ function sauvegarderModificationItem(e) {
             image: imageFinal
         };
 
+        await updateDoc(doc(db, "pokemonCollection", firestoreId), donneesMaj);
         fermerModification();
-        mettreAJourAffichage();
+        await chargerCollectionDepuisFirebase();
     };
 
     if (imageInputFile) {
         const reader = new FileReader();
-        reader.onload = function(event) {
-            enregistrerDonnees(event.target.result);
+        reader.onload = async function(event) {
+            await enregistrerDonnees(event.target.result);
         };
         reader.readAsDataURL(imageInputFile);
     } else {
-        enregistrerDonnees(itemActuel.image);
+        await enregistrerDonnees(itemActuel.image);
     }
 }
 
-function supprimerItem(index) {
+window.supprimerItem = async function(firestoreId) {
     if(confirm('Es-tu sûr de vouloir supprimer cet item ?')) {
-        collection.splice(index, 1);
-        mettreAJourAffichage();
+        await deleteDoc(doc(db, "pokemonCollection", firestoreId));
+        await chargerCollectionDepuisFirebase();
     }
 }
 
-function ouvrirMiseAJourMoisGlobale() {
-    if (collection.length === 0) {
+window.ouvrirMiseAJourMoisGlobale = function() {
+    if (collectionData.length === 0) {
         alert("Votre vitrine est vide pour le moment.");
         return;
     }
@@ -672,7 +696,7 @@ function ouvrirMiseAJourMoisGlobale() {
     const conteneur = document.getElementById('conteneur-saisie-liste');
     conteneur.innerHTML = '';
 
-    collection.forEach((item, index) => {
+    collectionData.forEach((item) => {
         const ligne = document.createElement('div');
         ligne.className = 'saisie-item-ligne';
         
@@ -693,7 +717,7 @@ function ouvrirMiseAJourMoisGlobale() {
             <div style="display: flex; align-items: center; gap: 8px;">
                 ${boutonCardmarketSaisie}
                 <div style="display: flex; align-items: center; gap: 5px;">
-                    <input type="text" inputmode="decimal" value="${item.valeur}" data-index="${index}" class="input-prix-rapide" style="width: 110px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; font-weight: 600; text-align: right;" required>
+                    <input type="text" inputmode="decimal" value="${item.valeur}" data-id="${item.id}" class="input-prix-rapide" style="width: 110px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; font-weight: 600; text-align: right;" required>
                     <span style="font-size: 0.9rem; color: var(--text-secondary);">€</span>
                 </div>
             </div>
@@ -704,24 +728,24 @@ function ouvrirMiseAJourMoisGlobale() {
     document.getElementById('modal-saisie-rapide').style.display = 'flex';
 }
 
-function fermerSaisieRapide() {
+window.fermerSaisieRapide = function() {
     document.getElementById('modal-saisie-rapide').style.display = 'none';
 }
 
-function sauvegarderSaisieRapide() {
+window.sauvegarderSaisieRapide = async function() {
     const moisStr = document.getElementById('saisie-globale-mois').value;
     const anneeStr = document.getElementById('saisie-globale-annee').value;
     const moisSaisi = `${moisStr.charAt(0).toUpperCase() + moisStr.slice(1)} ${anneeStr}`;
 
     const inputs = document.querySelectorAll('.input-prix-rapide');
     
-    inputs.forEach(input => {
-        const index = parseInt(input.getAttribute('data-index'));
+    for (let input of inputs) {
+        const firestoreId = input.getAttribute('data-id');
         const valeurNettoyee = input.value.replace(',', '.');
         const nouvelleValeur = parseFloat(valeurNettoyee);
 
         if (!isNaN(nouvelleValeur)) {
-            const item = collection[index];
+            const item = collectionData.find(i => i.id === firestoreId);
             if (!item.historique) item.historique = [];
 
             const indexExistant = item.historique.findIndex(h => h.date.toLowerCase() === moisSaisi.toLowerCase());
@@ -732,15 +756,20 @@ function sauvegarderSaisieRapide() {
             }
 
             item.valeur = nouvelleValeur;
-        }
-    });
 
-    mettreAJourAffichage();
+            await updateDoc(doc(db, "pokemonCollection", firestoreId), {
+                valeur: item.valeur,
+                historique: item.historique
+            });
+        }
+    }
+
+    await chargerCollectionDepuisFirebase();
     fermerSaisieRapide();
 }
 
-function ouvrirGraphique(index) {
-    const item = collection[index];
+window.ouvrirGraphique = function(index) {
+    const item = collectionData[index];
     const detailsTxt = item.details ? ` (${item.details})` : '';
     document.getElementById('titre-graphique').innerText = `Progression : ${item.nom} - ${item.set}${detailsTxt}`;
     document.getElementById('modal-item-index').value = index;
@@ -849,13 +878,13 @@ function mettreAJourInterfaceGraphique(item, index) {
         ligne.className = 'historique-ligne';
         ligne.innerHTML = `
             <span><strong>${h.date}</strong> : ${h.valeur} €</span>
-            <button onclick="supprimerMois(${index}, ${hIndex})" style="background: #ff3b30; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500;">Supprimer</button>
+            <button onclick="supprimerMois('${item.id}', ${hIndex})" style="background: #ff3b30; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500;">Supprimer</button>
         `;
         listeDiv.appendChild(ligne);
     });
 }
 
-function ajouterNouveauMois(e) {
+window.ajouterNouveauMois = async function(e) {
     e.preventDefault();
     const index = parseInt(document.getElementById('modal-item-index').value);
     const moisStr = document.getElementById('nouveau-mois').value;
@@ -863,7 +892,7 @@ function ajouterNouveauMois(e) {
     const moisSaisi = `${moisStr.charAt(0).toUpperCase() + moisStr.slice(1)} ${anneeStr}`;
     const valeur = parseFloat(document.getElementById('nouvelle-valeur-mois').value);
 
-    const item = collection[index];
+    const item = collectionData[index];
     if (!item.historique) item.historique = [];
 
     const indexExistant = item.historique.findIndex(h => h.date.toLowerCase() === moisSaisi.toLowerCase());
@@ -875,13 +904,18 @@ function ajouterNouveauMois(e) {
 
     item.valeur = valeur;
 
+    await updateDoc(doc(db, "pokemonCollection", item.id), {
+        valeur: item.valeur,
+        historique: item.historique
+    });
+
+    await chargerCollectionDepuisFirebase();
     ouvrirGraphique(index); 
-    mettreAJourAffichage();
     document.getElementById('nouvelle-valeur-mois').value = '';
 }
 
-function supprimerMois(itemIndex, moisIndex) {
-    const item = collection[itemIndex];
+window.supprimerMois = async function(firestoreId, moisIndex) {
+    const item = collectionData.find(i => i.id === firestoreId);
     
     if (item.historique.length <= 1) {
         alert("Impossible de supprimer le dernier point d'historique.");
@@ -891,10 +925,16 @@ function supprimerMois(itemIndex, moisIndex) {
     item.historique.splice(moisIndex, 1);
     item.valeur = item.historique[item.historique.length - 1].valeur;
 
-    ouvrirGraphique(itemIndex);
-    mettreAJourAffichage();
+    await updateDoc(doc(db, "pokemonCollection", firestoreId), {
+        valeur: item.valeur,
+        historique: item.historique
+    });
+
+    const indexLocal = collectionData.findIndex(i => i.id === firestoreId);
+    await chargerCollectionDepuisFirebase();
+    ouvrirGraphique(indexLocal);
 }
 
-function fermerGraphique() {
+window.fermerGraphique = function() {
     document.getElementById('modal-graphique').style.display = 'none';
 }
