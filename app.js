@@ -11,7 +11,6 @@ const firebaseConfig = {
     appId: "1:956649261781:web:56a13eff2dd0901377305c"
 };
 
-// Initialisation de Firebase & Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -63,7 +62,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await chargerCollectionDepuisFirebase();
 });
 
-// --- GESTION DES ONGLETS ET DU THÈME ---
+// --- EXPORT GLOBAL DES FONCTIONS HTML ---
 window.changerOnglet = function(nomOnglet, event) {
     document.querySelectorAll('.onglet-contenu').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -101,7 +100,7 @@ function mettreAJourBoutonTheme(theme) {
     }
 }
 
-function changerVue(mode) {
+window.changerVue = function(mode) {
     modeVueActuel = mode;
     localStorage.setItem('pokemonVue', mode);
     appliquerModeVueUI(mode);
@@ -137,7 +136,7 @@ async function chargerCollectionDepuisFirebase() {
     }
 }
 
-function mettreAJourAffichage() {
+window.mettreAJourAffichage = function() {
     grid.innerHTML = ''; 
 
     let sommeDepenseeGlobale = 0;
