@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ma Collection Pokémon - Portail</title>
-    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -211,7 +210,7 @@
 
     </div>
 
-    <!-- Modale Graphique Individuel -->
+    <!-- Modales -->
     <div id="modal-graphique" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close-btn" onclick="fermerGraphique()">&times;</span>
@@ -222,7 +221,6 @@
             
             <form id="form-ajout-mois" onsubmit="ajouterNouveauMois(event)" style="margin: 20px 0; padding: 12px; border-radius: 12px; display: flex; gap: 10px; flex-wrap: wrap;" class="modal-form-bg">
                 <input type="hidden" id="modal-item-index">
-                
                 <select id="nouveau-mois" required style="flex: 2; padding: 10px;">
                     <option value="" disabled selected>-- Mois --</option>
                     <option value="janvier">Janvier</option>
@@ -238,7 +236,6 @@
                     <option value="novembre">Novembre</option>
                     <option value="décembre">Décembre</option>
                 </select>
-
                 <select id="nouveau-annee" required style="flex: 1.5; padding: 10px;">
                     <option value="" disabled selected>-- Année --</option>
                     <option value="2026">2026</option>
@@ -247,7 +244,6 @@
                     <option value="2029">2029</option>
                     <option value="2030">2030</option>
                 </select>
-
                 <input type="number" id="nouvelle-valeur-mois" placeholder="Valeur (€)" step="0.01" required style="flex: 1.5; padding: 10px;">
                 <button type="submit" style="background-color: #0071e3; padding: 10px 18px; flex: 1; border:none; color:white; border-radius:10px; font-weight:500; cursor:pointer;">Ajouter</button>
             </form>
@@ -257,53 +253,32 @@
             </div>
 
             <div style="margin-top: 20px; max-height: 150px; overflow-y: auto; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Historique des mois :</h4>
-                <div id="liste-historique-mois" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase;">Historique des mois :</h4>
+                <div id="liste-historique-mois" style="display: flex; flexDirection: column; gap: 8px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- Modale d'Ajout Rapide de Stock (Bouton +) -->
     <div id="modal-ajout-stock" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 420px;">
             <span class="close-btn" onclick="fermerModalAjoutStock()">&times;</span>
             <h3 id="titre-modal-stock" style="margin-top: 0; font-weight: 600; margin-bottom: 5px;">Ajouter un exemplaire</h3>
             <p id="sous-titre-modal-stock" style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;"></p>
-            
             <form id="form-ajout-stock" class="vertical-form" onsubmit="validerAjoutStock(event)">
                 <input type="hidden" id="stock-item-index">
-                
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Quantité supplémentaire à ajouter :</label>
                 <input type="number" id="stock-quantite" min="1" value="1" required>
-
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Prix d'achat unitaire pour ce lot (€) :</label>
                 <input type="number" id="stock-prix" step="0.01" placeholder="Ex: 150.00" required>
-
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Mois et année de cet achat :</label>
                 <div class="select-group">
                     <select id="stock-mois" required>
-                        <option value="janvier">Janvier</option>
-                        <option value="février">Février</option>
-                        <option value="mars">Mars</option>
-                        <option value="avril">Avril</option>
-                        <option value="mai">Mai</option>
-                        <option value="juin">Juin</option>
-                        <option value="juillet">Juillet</option>
-                        <option value="août">Août</option>
-                        <option value="septembre">Septembre</option>
-                        <option value="octobre">Octobre</option>
-                        <option value="novembre">Novembre</option>
-                        <option value="décembre">Décembre</option>
+                        <option value="janvier">Janvier</option><option value="février">Février</option><option value="mars">Mars</option><option value="avril">Avril</option><option value="mai">Mai</option><option value="juin">Juin</option><option value="juillet">Juillet</option><option value="août">Août</option><option value="septembre">Septembre</option><option value="octobre">Octobre</option><option value="novembre">Novembre</option><option value="décembre">Décembre</option>
                     </select>
                     <select id="stock-annee" required>
-                        <option value="2026">2026</option>
-                        <option value="2027">2027</option>
-                        <option value="2028">2028</option>
-                        <option value="2029">2029</option>
-                        <option value="2030">2030</option>
+                        <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
                     </select>
                 </div>
-
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button type="submit" style="background-color: #34c759; flex: 1;">Ajouter au stock</button>
                     <button type="button" onclick="fermerModalAjoutStock()" style="background-color: #86868b; flex: 1; border:none; color:white; border-radius:12px; font-weight:500; cursor:pointer; padding: 12px;">Annuler</button>
@@ -312,125 +287,69 @@
         </div>
     </div>
 
-    <!-- Modale de Modification d'un Item -->
     <div id="modal-modification" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 500px;">
             <span class="close-btn" onclick="fermerModification()">&times;</span>
             <h3 style="margin-top: 0; font-weight: 600; margin-bottom: 20px;">Modifier l'Item</h3>
-            
             <form id="edit-form" class="vertical-form" onsubmit="sauvegarderModificationItem(event)">
                 <input type="hidden" id="edit-index">
-                
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Catégorie :</label>
                 <select id="edit-nom" required>
-                    <option value="Booster blister carton">Booster blister carton</option>
-                    <option value="Booster blister plastique">Booster blister plastique</option>
-                    <option value="Booster blister plastique (ancien)">Booster blister plastique (ancien)</option>
-                    <option value="Carte gradée">Carte gradée</option>
-                    <option value="Coffret">Coffret</option>
-                    <option value="Display">Display</option>
-                    <option value="Display Bundle">Display Bundle</option>
-                    <option value="ETB">ETB</option>
-                    <option value="SPC">SPC</option>
-                    <option value="Tripack">Tripack</option>
-                    <option value="UPC">UPC</option>
+                    <option value="Booster blister carton">Booster blister carton</option><option value="Booster blister plastique">Booster blister plastique</option><option value="Booster blister plastique (ancien)">Booster blister plastique (ancien)</option><option value="Carte gradée">Carte gradée</option><option value="Coffret">Coffret</option><option value="Display">Display</option><option value="Display Bundle">Display Bundle</option><option value="ETB">ETB</option><option value="SPC">SPC</option><option value="Tripack">Tripack</option><option value="UPC">UPC</option>
                 </select>
-
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Quantité :</label>
                 <input type="number" id="edit-quantite" placeholder="Quantité" min="1" required>
-
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Extension / Set :</label>
-                <input type="text" id="edit-set" placeholder="Extension (ex: Set de Base)" required>
-
+                <input type="text" id="edit-set" placeholder="Extension" required>
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Détails :</label>
-                <input type="text" id="edit-details" placeholder="Détails (ex: PSA 10...) (optionnel)">
-
+                <input type="text" id="edit-details" placeholder="Détails (optionnel)">
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Prix d'achat unitaire (€) :</label>
-                <input type="number" id="edit-prixAchat" placeholder="Prix d'achat unitaire (€)" step="0.01" required>
-
+                <input type="number" id="edit-prixAchat" step="0.01" required>
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Valeur actuelle unitaire (€) :</label>
-                <input type="number" id="edit-valeur" placeholder="Valeur actuelle unitaire (€)" step="0.01" required>
-
+                <input type="number" id="edit-valeur" step="0.01" required>
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Mois d'achat initial :</label>
                 <div class="select-group">
                     <select id="edit-moisAchat-mois" required>
-                        <option value="janvier">Janvier</option>
-                        <option value="février">Février</option>
-                        <option value="mars">Mars</option>
-                        <option value="avril">Avril</option>
-                        <option value="mai">Mai</option>
-                        <option value="juin">Juin</option>
-                        <option value="juillet">Juillet</option>
-                        <option value="août">Août</option>
-                        <option value="septembre">Septembre</option>
-                        <option value="octobre">Octobre</option>
-                        <option value="novembre">Novembre</option>
-                        <option value="décembre">Décembre</option>
+                        <option value="janvier">Janvier</option><option value="février">Février</option><option value="mars">Mars</option><option value="avril">Avril</option><option value="mai">Mai</option><option value="juin">Juin</option><option value="juillet">Juillet</option><option value="août">Août</option><option value="septembre">Septembre</option><option value="octobre">Octobre</option><option value="novembre">Novembre</option><option value="décembre">Décembre</option>
                     </select>
                     <select id="edit-moisAchat-annee" required>
-                        <option value="2026">2026</option>
-                        <option value="2027">2027</option>
-                        <option value="2028">2028</option>
-                        <option value="2029">2029</option>
-                        <option value="2030">2030</option>
+                        <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
                     </select>
                 </div>
-
                 <label style="font-size: 0.85rem; color: var(--text-secondary);">Lien Cardmarket :</label>
-                <input type="url" id="edit-lienCardmarket" placeholder="Lien Cardmarket (optionnel)">
-
-                <label style="font-size: 0.85rem; color: var(--text-secondary);">Remplacer l'image (optionnel) :</label>
+                <input type="url" id="edit-lienCardmarket" placeholder="Lien Cardmarket">
+                <label style="font-size: 0.85rem; color: var(--text-secondary);">Remplacer l'image :</label>
                 <label for="edit-imageInput" class="file-upload-label">Choisir une nouvelle image</label>
                 <input type="file" id="edit-imageInput" accept="image/*" style="display:none;">
-
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="submit" style="background-color: #0071e3; flex: 1;">Enregistrer les modifications</button>
+                    <button type="submit" style="background-color: #0071e3; flex: 1;">Enregistrer</button>
                     <button type="button" onclick="fermerModification()" style="background-color: #86868b; flex: 1; border:none; color:white; border-radius:12px; font-weight:500; cursor:pointer; padding: 12px;">Annuler</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modale de Saisie Rapide -->
     <div id="modal-saisie-rapide" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 750px;">
             <span class="close-btn" onclick="fermerSaisieRapide()">&times;</span>
             <h3 style="margin-top: 0; font-weight: 600;">Mise à jour rapide des prix</h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Choisissez le mois concerné, puis ajustez les prix à la chaîne.</p>
-            
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <select id="saisie-globale-mois" style="flex: 2; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
-                    <option value="janvier">Janvier</option>
-                    <option value="février">Février</option>
-                    <option value="mars">Mars</option>
-                    <option value="avril">Avril</option>
-                    <option value="mai">Mai</option>
-                    <option value="juin">Juin</option>
-                    <option value="juillet">Juillet</option>
-                    <option value="août">Août</option>
-                    <option value="septembre">Septembre</option>
-                    <option value="octobre">Octobre</option>
-                    <option value="novembre">Novembre</option>
-                    <option value="décembre">Décembre</option>
+                    <option value="janvier">Janvier</option><option value="février">Février</option><option value="mars">Mars</option><option value="avril">Avril</option><option value="mai">Mai</option><option value="juin">Juin</option><option value="juillet">Juillet</option><option value="août">Août</option><option value="septembre">Septembre</option><option value="octobre">Octobre</option><option value="novembre">Novembre</option><option value="décembre">Décembre</option>
                 </select>
                 <select id="saisie-globale-annee" style="flex: 1.5; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
-                    <option value="2026">2026</option>
-                    <option value="2027">2027</option>
-                    <option value="2028">2028</option>
-                    <option value="2029">2029</option>
-                    <option value="2030">2030</option>
+                    <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
                 </select>
             </div>
-
-            <div id="conteneur-saisie-liste" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;"></div>
-
+            <div id="conteneur-saisie-liste" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;"></div>
             <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" onclick="fermerSaisieRapide()" style="background-color: #86868b; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 500;">Annuler</button>
-                <button type="button" onclick="sauvegarderSaisieRapide()" style="background-color: #0071e3; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 500;">Enregistrer tous les prix</button>
+                <button type="button" onclick="fermerSaisieRapide()" style="background-color: #86868b; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer;">Annuler</button>
+                <button type="button" onclick="sauvegarderSaisieRapide()" style="background-color: #0071e3; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer;">Enregistrer</button>
             </div>
         </div>
     </div>
 
+    <!-- C'est ici que le module JavaScript est chargé correctement -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
