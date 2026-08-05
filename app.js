@@ -938,3 +938,36 @@ window.supprimerMois = async function(firestoreId, moisIndex) {
 window.fermerGraphique = function() {
     document.getElementById('modal-graphique').style.display = 'none';
 }
+import { collection as fbCollection, addDoc as fbAddDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Fonction d'importation temporaire accessible depuis la console
+window.importerDonnees = async function(itemsImportes) {
+    const imageDefaut = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
+    console.log("🚀 Début de l'importation...");
+
+    for (let item of itemsImportes) {
+        const historique = Object.keys(item.valeursMois).map(mois => ({
+            date: mois,
+            valeur: item.valeursMois[mois]
+        }));
+
+        const derniereValeur = item.valeursMois["Juillet 2026"];
+
+        const data = {
+            nom: item.nom,
+            set: item.set,
+            details: item.details || "",
+            quantite: item.quantite,
+            prixAchat: item.prixAchat,
+            valeur: derniereValeur,
+            moisAchat: "Janvier 2026",
+            achatsDetail: [{ quantite: item.quantite, prixAchat: item.prixAchat, moisAchat: "Janvier 2026" }],
+            lienCardmarket: item.lienCardmarket || "",
+            image: imageDefaut,
+            historique: historique
+        };
+
+        await fbAddDoc(fbCollection(db, "pokemonCollection"), data);
+    }
+    console.log("✨ Importation terminée ! Rafraîchissez la page.");
+};
