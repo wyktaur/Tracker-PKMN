@@ -60,7 +60,92 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (saisieAnnee && document.querySelector(`#saisie-globale-annee option[value="${anneeActuelle}"]`)) saisieAnnee.value = anneeActuelle;
 
     await chargerCollectionDepuisFirebase();
+
+    // IMPORTATION AUTOMATIQUE SI LA BASE EST VIDE
+    if (collectionData.length === 0) {
+        await lancerImportationAutomatique();
+    }
 });
+
+async function lancerImportationAutomatique() {
+    const itemsImportes = [
+        { nom: "Display", set: "Flammes Obsidiennes", quantite: 1, prixAchat: 180, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Obsidian-Flames-Booster-Box?language=2", valeursMois: { "Janvier 2026": 280, "Février 2026": 240, "Mars 2026": 240, "Avril 2026": 250, "Mai 2026": 250, "Juin 2026": 200, "Juillet 2026": 190 } },
+        { nom: "Display", set: "Etincelles Déferlantes", quantite: 1, prixAchat: 165, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Surging-Sparks-Booster-Box?language=2", valeursMois: { "Janvier 2026": 220, "Février 2026": 225, "Mars 2026": 210, "Avril 2026": 210, "Mai 2026": 210, "Juin 2026": 215, "Juillet 2026": 220 } },
+        { nom: "Display", set: "Rivalités Destinées", quantite: 7, prixAchat: 310, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Destined-Rivals-Booster-Box?language=2", valeursMois: { "Janvier 2026": 260, "Février 2026": 280, "Mars 2026": 275, "Avril 2026": 290, "Mai 2026": 320, "Juin 2026": 280, "Juillet 2026": 295 } },
+        { nom: "Display", set: "Evolution Céleste", quantite: 1, prixAchat: 1100, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Evolving-Skies-Booster-Box?language=2", valeursMois: { "Janvier 2026": 1050, "Février 2026": 1050, "Mars 2026": 1075, "Avril 2026": 1050, "Mai 2026": 1200, "Juin 2026": 1350, "Juillet 2026": 1300 } },
+        { nom: "Display Bundle", set: "Evolutions Prismatiques", quantite: 1, prixAchat: 650, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Prismatic-Evolutions-Booster-Bundle-Display?language=2", valeursMois: { "Janvier 2026": 500, "Février 2026": 510, "Mars 2026": 510, "Avril 2026": 540, "Mai 2026": 600, "Juin 2026": 650, "Juillet 2026": 650 } },
+        { nom: "Coffret", set: "Destinées de Paldea", quantite: 6, prixAchat: 65, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Box-Sets/Paldean-Fates-Skeledirge-ex-Premium-Collection?language=2", valeursMois: { "Janvier 2026": 95, "Février 2026": 100, "Mars 2026": 100, "Avril 2026": 90, "Mai 2026": 90, "Juin 2026": 90, "Juillet 2026": 100 } },
+        { nom: "Coffret", set: "151", quantite: 1, prixAchat: 115, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Box-Sets/151-Blooming-Waters-Premium-Collection?language=2", valeursMois: { "Janvier 2026": 130, "Février 2026": 160, "Mars 2026": 160, "Avril 2026": 220, "Mai 2026": 210, "Juin 2026": 230, "Juillet 2026": 245 } },
+        { nom: "Coffret", set: "Fable Nébuleuse", quantite: 1, prixAchat: 40, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Box-Sets/Shrouded-Fable-Kingdra-ex-Special-Illustration-Collection?language=2", valeursMois: { "Janvier 2026": 60, "Février 2026": 55, "Mars 2026": 55, "Avril 2026": 50, "Mai 2026": 60, "Juin 2026": 60, "Juillet 2026": 80 } },
+        { nom: "Coffret", set: "Fable Nébuleuse", quantite: 1, prixAchat: 40, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Box-Sets/Shrouded-Fable-Greninja-ex-Special-Illustration-Collection?language=2", valeursMois: { "Janvier 2026": 60, "Février 2026": 55, "Mars 2026": 55, "Avril 2026": 55, "Mai 2026": 55, "Juin 2026": 60, "Juillet 2026": 70 } },
+        { nom: "Coffret", set: "Ombres Ardentes", quantite: 1, prixAchat: 150, lienCardmarket: "", valeursMois: { "Janvier 2026": 250, "Février 2026": 250, "Mars 2026": 250, "Avril 2026": 250, "Mai 2026": 250, "Juin 2026": 200, "Juillet 2026": 200 } },
+        { nom: "Coffret", set: "Evolutions Prismatiques", quantite: 1, prixAchat: 90, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Box-Sets/Prismatic-Evolutions-Premium-Figure-Collection?language=2", valeursMois: { "Janvier 2026": 110, "Février 2026": 110, "Mars 2026": 115, "Avril 2026": 120, "Mai 2026": 120, "Juin 2026": 140, "Juillet 2026": 140 } },
+        { nom: "SPC", set: "Evolutions Prismatiques", quantite: 2, prixAchat: 120, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Box-Sets/Prismatic-Evolutions-Super-Premium-Collection?language=2", valeursMois: { "Janvier 2026": 150, "Février 2026": 150, "Mars 2026": 160, "Avril 2026": 160, "Mai 2026": 175, "Juin 2026": 180, "Juillet 2026": 200 } },
+        { nom: "UPC", set: "Flammes Fantasmagoriques", quantite: 1, prixAchat: 150, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Box-Sets/Mega-Charizard-X-ex-Ultra-Premium-Collection?language=2", valeursMois: { "Janvier 2026": 175, "Février 2026": 160, "Mars 2026": 160, "Avril 2026": 170, "Mai 2026": 160, "Juin 2026": 170, "Juillet 2026": 175 } },
+        { nom: "Tripack", set: "Couronne Stellaire", quantite: 2, prixAchat: 18, lienCardmarket: "", valeursMois: { "Janvier 2026": 50, "Février 2026": 50, "Mars 2026": 50, "Avril 2026": 50, "Mai 2026": 50, "Juin 2026": 50, "Juillet 2026": 50 } },
+        { nom: "Tripack", set: "Etincelles Déferlantes", quantite: 20, prixAchat: 27, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Blisters/Surging-Sparks-Zapdos-3-Pack-Blister?language=2", valeursMois: { "Janvier 2026": 25, "Février 2026": 25, "Mars 2026": 25, "Avril 2026": 25, "Mai 2026": 25, "Juin 2026": 27, "Juillet 2026": 26 } },
+        { nom: "Tripack", set: "Rivalités Destinées", quantite: 2, prixAchat: 20, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Blisters/Destined-Rivals-Zebstrika-3-Pack-Blister?language=2", valeursMois: { "Janvier 2026": 25, "Février 2026": 25, "Mars 2026": 26, "Avril 2026": 25, "Mai 2026": 26, "Juin 2026": 28, "Juillet 2026": 26 } },
+        { nom: "Tripack", set: "Flamme Blanche", quantite: 8, prixAchat: 20, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Blisters/Black-Bolt-Reuniclus-Tech-Sticker-Collection?language=2", valeursMois: { "Janvier 2026": 20, "Février 2026": 20, "Mars 2026": 20, "Avril 2026": 20, "Mai 2026": 20, "Juin 2026": 20, "Juillet 2026": 20 } },
+        { nom: "Tripack", set: "Foudre Noire", quantite: 8, prixAchat: 20, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Blisters/Black-Bolt-Reuniclus-Tech-Sticker-Collection?language=2", valeursMois: { "Janvier 2026": 20, "Février 2026": 20, "Mars 2026": 20, "Avril 2026": 20, "Mai 2026": 19, "Juin 2026": 20, "Juillet 2026": 20 } },
+        { nom: "Tripack", set: "Flammes Fantasmagoriques", quantite: 2, prixAchat: 20, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Blisters/Phantasmal-Flames-Sneasel-3-Pack-Blister?language=2", valeursMois: { "Janvier 2026": 20, "Février 2026": 20, "Mars 2026": 20, "Avril 2026": 20, "Mai 2026": 20, "Juin 2026": 20, "Juillet 2026": 24 } },
+        { nom: "ETB", set: "Faille Paradoxe", quantite: 1, prixAchat: 95, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Paradox-Rift-Iron-Valiant-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 70, "Février 2026": 80, "Mars 2026": 80, "Avril 2026": 80, "Mai 2026": 80, "Juin 2026": 90, "Juillet 2026": 80 } },
+        { nom: "ETB", set: "Forces Temporelles", quantite: 1, prixAchat: 95, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Temporal-Forces-Iron-Leaves-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 75, "Février 2026": 80, "Mars 2026": 100, "Avril 2026": 90, "Mai 2026": 90, "Juin 2026": 90, "Juillet 2026": 80 } },
+        { nom: "ETB", set: "Fable Nébuleuse", quantite: 1, prixAchat: 65, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Shrouded-Fable-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 65, "Février 2026": 70, "Mars 2026": 70, "Avril 2026": 70, "Mai 2026": 70, "Juin 2026": 70, "Juillet 2026": 70 } },
+        { nom: "ETB", set: "Evolutions Prismatiques", quantite: 1, prixAchat: 115, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Prismatic-Evolutions-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 90, "Février 2026": 90, "Mars 2026": 85, "Avril 2026": 90, "Mai 2026": 90, "Juin 2026": 100, "Juillet 2026": 115 } },
+        { nom: "ETB", set: "Aventures Ensemble", quantite: 2, prixAchat: 55, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Journey-Together-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 70, "Février 2026": 70, "Mars 2026": 70, "Avril 2026": 75, "Mai 2026": 70, "Juin 2026": 70, "Juillet 2026": 70 } },
+        { nom: "ETB", set: "Rivalités Destinées", quantite: 3, prixAchat: 75, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Destined-Rivals-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 90, "Février 2026": 100, "Mars 2026": 110, "Avril 2026": 125, "Mai 2026": 150, "Juin 2026": 150, "Juillet 2026": 150 } },
+        { nom: "ETB", set: "Flamme Blanche", quantite: 1, prixAchat: 60, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/White-Flare-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 70, "Février 2026": 70, "Mars 2026": 70, "Avril 2026": 70, "Mai 2026": 70, "Juin 2026": 80, "Juillet 2026": 85 } },
+        { nom: "ETB", set: "Foudre Noire", quantite: 1, prixAchat: 75, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Black-Bolt-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 70, "Février 2026": 70, "Mars 2026": 70, "Avril 2026": 75, "Mai 2026": 75, "Juin 2026": 80, "Juillet 2026": 80 } },
+        { nom: "ETB", set: "Méga-Evolution", quantite: 4, prixAchat: 60, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Mega-Evolution-Mega-Lucario-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 70, "Février 2026": 70, "Mars 2026": 75, "Avril 2026": 75, "Mai 2026": 75, "Juin 2026": 80, "Juillet 2026": 90 } },
+        { nom: "ETB", set: "Flammes Fantasmagoriques", quantite: 1, prixAchat: 60, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/Phantasmal-Flames-Elite-Trainer-Box?language=2", valeursMois: { "Janvier 2026": 70, "Février 2026": 70, "Mars 2026": 70, "Avril 2026": 75, "Mai 2026": 80, "Juin 2026": 80, "Juillet 2026": 95 } },
+        { nom: "Booster Blister", set: "Ecarlate et Violet", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Scarlet-Violet-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 7.5, "Février 2026": 7, "Mars 2026": 7.5, "Avril 2026": 7.5, "Mai 2026": 8, "Juin 2026": 8, "Juillet 2026": 8 } },
+        { nom: "Booster Blister", set: "Evolutions à Paldea", quantite: 4, prixAchat: 9, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Paldea-Evolved-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 9, "Février 2026": 8.5, "Mars 2026": 8, "Avril 2026": 8, "Mai 2026": 8, "Juin 2026": 8, "Juillet 2026": 8 } },
+        { nom: "Booster Blister", set: "Flammes Obsidiennes", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Obsidian-Flames-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 10, "Février 2026": 12, "Mars 2026": 10, "Avril 2026": 8, "Mai 2026": 8, "Juin 2026": 8, "Juillet 2026": 8 } },
+        { nom: "Booster Blister", set: "Faille Paradoxe", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Paradox-Rift-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 12, "Février 2026": 15, "Mars 2026": 12.5, "Avril 2026": 10, "Mai 2026": 7, "Juin 2026": 7.5, "Juillet 2026": 7.5 } },
+        { nom: "Booster Blister", set: "Forces Temporelles", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Temporal-Forces-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 9, "Février 2026": 8, "Mars 2026": 8, "Avril 2026": 9, "Mai 2026": 9, "Juin 2026": 10, "Juillet 2026": 10 } },
+        { nom: "Booster Blister", set: "Mascarade Crépusculaire", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Twilight-Masquerade-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 7, "Février 2026": 7, "Mars 2026": 7, "Avril 2026": 7.5, "Mai 2026": 7.5, "Juin 2026": 7.5, "Juillet 2026": 7.5 } },
+        { nom: "Booster Blister", set: "Couronne Stellaire", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Stellar-Crown-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 8, "Février 2026": 9, "Mars 2026": 9, "Avril 2026": 10, "Mai 2026": 10, "Juin 2026": 10, "Juillet 2026": 10 } },
+        { nom: "Booster Blister", set: "Etincelles Déferlantes", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Surging-Sparks-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 8.5, "Février 2026": 8, "Mars 2026": 7.5, "Avril 2026": 8, "Mai 2026": 7.5, "Juin 2026": 7.5, "Juillet 2026": 7.5 } },
+        { nom: "Booster Blister", set: "Etincelles Déferlantes", quantite: 8, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Surging-Sparks-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 10, "Février 2026": 10, "Mars 2026": 10, "Avril 2026": 10, "Mai 2026": 10, "Juin 2026": 10, "Juillet 2026": 10 } },
+        { nom: "Booster Blister", set: "Aventures Ensemble", quantite: 4, prixAchat: 6, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Journey-Together-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 6, "Février 2026": 6.5, "Mars 2026": 6.5, "Avril 2026": 6, "Mai 2026": 6, "Juin 2026": 6, "Juillet 2026": 6 } },
+        { nom: "Booster Blister", set: "Aventures Ensemble", quantite: 8, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Journey-Together-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 10, "Février 2026": 10, "Mars 2026": 10, "Avril 2026": 8, "Mai 2026": 8, "Juin 2026": 8, "Juillet 2026": 8 } },
+        { nom: "Booster Blister", set: "Rivalités Destinées", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Destined-Rivals-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 7.5, "Février 2026": 7.5, "Mars 2026": 8, "Avril 2026": 9, "Mai 2026": 8.5, "Juin 2026": 8, "Juillet 2026": 8 } },
+        { nom: "Booster Blister", set: "Rivalités Destinées", quantite: 8, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Destined-Rivals-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 10, "Février 2026": 12, "Mars 2026": 12, "Avril 2026": 12, "Mai 2026": 12, "Juin 2026": 12, "Juillet 2026": 12 } },
+        { nom: "Booster Blister", set: "Méga-Evolution", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Mega-Evolution-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 7, "Février 2026": 7, "Mars 2026": 6, "Avril 2026": 7, "Mai 2026": 7, "Juin 2026": 7, "Juillet 2026": 7 } },
+        { nom: "Booster Blister", set: "Flammes Fantasmagoriques", quantite: 4, prixAchat: 7, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Boosters/Phantasmal-Flames-Sleeved-Booster?language=2", valeursMois: { "Janvier 2026": 7, "Février 2026": 7, "Mars 2026": 8, "Avril 2026": 7.5, "Mai 2026": 7, "Juin 2026": 7.5, "Juillet 2026": 7.5 } },
+        { nom: "Carte gradée", set: "Etincelles Déferlantes", details: "Hydreigon-ex V3-SSP240", quantite: 1, prixAchat: 200, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Singles/Surging-Sparks/Hydreigon-ex-V3-SSP240?language=2", valeursMois: { "Janvier 2026": 200, "Février 2026": 200, "Mars 2026": 200, "Avril 2026": 200, "Mai 2026": 250, "Juin 2026": 250, "Juillet 2026": 250 } },
+        { nom: "Carte gradée", set: "Etincelles Déferlantes", details: "Hydreigon-ex V3-SSP240", quantite: 1, prixAchat: 150, lienCardmarket: "https://www.cardmarket.com/fr/Pokemon/Products/Singles/Surging-Sparks/Hydreigon-ex-V3-SSP240?language=2", valeursMois: { "Janvier 2026": 150, "Février 2026": 150, "Mars 2026": 150, "Avril 2026": 150, "Mai 2026": 100, "Juin 2026": 100, "Juillet 2026": 70 } }
+    ];
+
+    const imageDefaut = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
+
+    for (let item of itemsImportes) {
+        const historique = Object.keys(item.valeursMois).map(mois => ({
+            date: mois,
+            valeur: item.valeursMois[mois]
+        }));
+
+        const derniereValeur = item.valeursMois["Juillet 2026"];
+
+        const data = {
+            nom: item.nom,
+            set: item.set,
+            details: item.details || "",
+            quantite: item.quantite,
+            prixAchat: item.prixAchat,
+            valeur: derniereValeur,
+            moisAchat: "Janvier 2026",
+            achatsDetail: [{ quantite: item.quantite, prixAchat: item.prixAchat, moisAchat: "Janvier 2026" }],
+            lienCardmarket: item.lienCardmarket || "",
+            image: imageDefaut,
+            historique: historique
+        };
+
+        await addDoc(collection(db, "pokemonCollection"), data);
+    }
+    
+    await chargerCollectionDepuisFirebase();
+}
 
 // --- EXPORT GLOBAL DES FONCTIONS HTML ---
 window.changerOnglet = function(nomOnglet, event) {
@@ -938,36 +1023,3 @@ window.supprimerMois = async function(firestoreId, moisIndex) {
 window.fermerGraphique = function() {
     document.getElementById('modal-graphique').style.display = 'none';
 }
-import { collection as fbCollection, addDoc as fbAddDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-// Fonction d'importation temporaire accessible depuis la console
-window.importerDonnees = async function(itemsImportes) {
-    const imageDefaut = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
-    console.log("🚀 Début de l'importation...");
-
-    for (let item of itemsImportes) {
-        const historique = Object.keys(item.valeursMois).map(mois => ({
-            date: mois,
-            valeur: item.valeursMois[mois]
-        }));
-
-        const derniereValeur = item.valeursMois["Juillet 2026"];
-
-        const data = {
-            nom: item.nom,
-            set: item.set,
-            details: item.details || "",
-            quantite: item.quantite,
-            prixAchat: item.prixAchat,
-            valeur: derniereValeur,
-            moisAchat: "Janvier 2026",
-            achatsDetail: [{ quantite: item.quantite, prixAchat: item.prixAchat, moisAchat: "Janvier 2026" }],
-            lienCardmarket: item.lienCardmarket || "",
-            image: imageDefaut,
-            historique: historique
-        };
-
-        await fbAddDoc(fbCollection(db, "pokemonCollection"), data);
-    }
-    console.log("✨ Importation terminée ! Rafraîchissez la page.");
-};
