@@ -23,7 +23,7 @@ let monGraphique = null;
 let portfolioChartInstance = null;
 let categoryChartInstance = null;
 
-// Fonction utilitaire pour compresser l'image et l'empêcher de dépasser la limite de Firebase
+// Fonction de compression qui préserve la transparence des PNG
 function compresserImage(file, callback) {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -33,7 +33,7 @@ function compresserImage(file, callback) {
             let width = img.width;
             let height = img.height;
 
-            // Redimensionnement maximal pour garder un poids léger (< 500 Ko)
+            // Redimensionnement maximal pour alléger le poids
             const MAX_WIDTH = 600;
             const MAX_HEIGHT = 600;
 
@@ -52,10 +52,18 @@ function compresserImage(file, callback) {
             canvas.width = width;
             canvas.height = height;
             const ctx = canvas.getContext('2d');
+            
+            // Pas de fond blanc ajouté : la transparence est préservée
+            ctx.clearRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Compression au format JPEG avec une qualité de 0.7
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            // Utilisation du format WebP (qui gère la transparence et compresse très bien)
+            // Si le navigateur ne gère pas WebP, il basculera proprement sur du PNG compressé
+            let dataUrl = canvas.toDataURL('image/webp', 0.8);
+            if (!dataUrl.startsWith('data:image/webp')) {
+                dataUrl = canvas.toDataURL('image/png');
+            }
+
             callback(dataUrl);
         };
         img.src = e.target.result;
